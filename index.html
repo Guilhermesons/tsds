@@ -4,23 +4,108 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login Seguro - Blog</title>
-  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+    }
+
+    .login-container {
+      width: 300px;
+      margin: 100px auto;
+      padding: 30px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    #error-message {
+      color: red;
+      font-size: 0.9em;
+    }
+  </style>
 </head>
 <body>
-  <div class="login-container">
-    <h2>Login Seguro</h2>
-    <form id="loginForm">
-      <label for="username">Usuário:</label>
-      <input type="text" id="username" name="username" required />
+<div class="login-container">
+  <h2>Login Seguro</h2>
+  <form id="loginForm">
+    <label for="username">Usuário:</label>
+    <input type="text" id="username" name="username" required />
 
-      <label for="password">Senha:</label>
-      <input type="password" id="password" name="password" required />
+    <label for="password">Senha:</label>
+    <input type="password" id="password" name="password" required />
 
-      <button type="submit">Entrar</button>
-    </form>
-    <p id="error-message"></p>
-  </div>
+    <button type="button" id="loginButton">Entrar</button>
+  </form>
+  <p id="error-message"></p>
+</div>
 
-  <script src="script.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById('loginButton').addEventListener('click', async () => {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      console.log("Tentando login com:", username, password);
+
+      try {
+        const response = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        console.log("Requisição enviada, aguardando resposta...");
+
+        const result = await response.json();
+        console.log("Resposta do backend:", result);
+
+        if (result.success) {
+          switch (result.role) {
+            case "ROLE_MATEMATICA":
+              console.log("Redirecionando para blog-matematica.html");
+              window.location.href = "blog-matematica.html";
+              break;
+            case "ROLE_BIOLOGIA":
+              console.log("Redirecionando para blog-biologia.html");
+              window.location.href = "blog-biologia.html";
+              break;
+            default:
+              document.getElementById('error-message').textContent =
+                "Papel de usuário não reconhecido: " + result.role;
+          }
+        } else {
+          document.getElementById('error-message').textContent = result.message || "Credenciais inválidas.";
+        }
+      } catch (error) {
+        document.getElementById('error-message').textContent = "Erro ao conectar com o servidor.";
+        console.error(error);
+      }
+    });
+  });
+</script>
+
 </body>
 </html>
